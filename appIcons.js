@@ -538,14 +538,30 @@ export const TaskbarAppIcon = GObject.registerClass({
         this._displayProperIndicator();
     }
 
+    _colorStyleVariant() {
+        const {colorScheme} = St.Settings.get();
+        switch (colorScheme) {
+            case St.SystemColorScheme.PREFER_LIGHT:
+            case St.SystemColorScheme.DEFAULT:
+                return 'light';
+            case St.SystemColorScheme.PREFER_DARK:
+            default:
+                return '';
+        }
+    }
+
     _updateWindowTitleStyle() {
         if (this._windowTitle) {
             let useFixedWidth = SETTINGS.get_boolean('group-apps-use-fixed-width');
             let fontWeight = SETTINGS.get_string('group-apps-label-font-weight');
             let fontScale = DESKTOPSETTINGS.get_double('text-scaling-factor');
+            let colorStyleVariant = this._colorStyleVariant();
+            if (colorStyleVariant !== '') {
+                colorStyleVariant = `-on-${colorStyleVariant}`;
+            }
             let fontColor = this.window.minimized ?
-                            SETTINGS.get_string('group-apps-label-font-color-minimized') :
-                            SETTINGS.get_string('group-apps-label-font-color');
+                            SETTINGS.get_string(`group-apps-label-font-color-minimized${colorStyleVariant}`) :
+                            SETTINGS.get_string(`group-apps-label-font-color${colorStyleVariant}`);
             let scaleFactor = Utils.getScaleFactor();
             let maxLabelWidth = SETTINGS.get_int('group-apps-label-max-width') * scaleFactor;
             let variableWidth = !useFixedWidth || this.dtpPanel.checkIfVertical() || this.dtpPanel.taskbar.fullScrollView;
